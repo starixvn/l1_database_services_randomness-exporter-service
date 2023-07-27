@@ -5,9 +5,13 @@ const db = {
     server: "10.10.50.12:39100,10.10.50.13:39100,10.10.50.14:39100",
     replSet: "L1Local",
 };
-const appName = encodeURI("Randomness Exporter DevMode");
+const appName = encodeURI("Randomness Exporter Service");
 
-const environment = "LOCAL-DEV";
+const environment = "LOCAL0";
+
+export const eventConfigs = {
+    metricCalculation: 60_000,
+};
 
 export const sentryOptions = {
     dsn: "https://098a0c6ad1d74e8eb39ec7df895e59e0@sentry.lumigame.com/76",

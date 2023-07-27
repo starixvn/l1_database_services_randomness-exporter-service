@@ -40,6 +40,9 @@ devDependencies:
   '@commitlint/config-conventional':
     specifier: ^17.6.7
     version: 17.6.7
+  '@jest/globals':
+    specifier: ^29.6.2
+    version: 29.6.2
   '@types/jest':
     specifier: ^29.5.3
     version: 29.5.3
