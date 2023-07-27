@@ -120,7 +120,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class VipsedieMetricUpdater extends MetricUpdater {
-    constructor(protected metricCollection: Collection, protected roundCollection: Collection) {
-        super(metricCollection, roundCollection, pipelineFactory);
+    constructor(protected vipsedieMetricCollection: Collection, protected vipsedieRoundCollection: Collection) {
+        super(vipsedieMetricCollection, vipsedieRoundCollection, pipelineFactory);
     }
 }

@@ -1,7 +1,10 @@
+import { Scheduler } from "@ldb/scheduler";
 import { AggregateOptions, Collection, Document } from "mongodb";
 import { logger } from "../loggers";
 
 export class MetricUpdater {
+    private readonly schedulers: Set<Scheduler> = new Set();
+
     constructor(
         protected metricCollection: Collection,
         protected roundCollection: Collection,
@@ -10,6 +13,12 @@ export class MetricUpdater {
         this.metricCollection = metricCollection;
         this.roundCollection = roundCollection;
         this.pipelineFactory = pipelineFactory;
+
+        this.selfBound();
+    }
+
+    protected selfBound() {
+        this.execute = this.execute.bind(this);
     }
 
     protected get pipeline(): Document[] {
@@ -33,7 +42,7 @@ export class MetricUpdater {
         };
 
         try {
-            await this.metricCollection.aggregate(this.pipeline, aggregateOptions);
+            await this.metricCollection.aggregate(this.pipeline, aggregateOptions).tryNext();
         } catch (error: unknown) {
             this.handleAggregateError(error, "executeMergeAggregate");
         }
@@ -41,5 +50,27 @@ export class MetricUpdater {
 
     protected handleAggregateError(error: unknown, component: string): void {
         logger.logError(`${this.className}.${component}`, error);
+    }
+
+    subscribe(scheduler: Scheduler): boolean {
+        if (this.schedulers.has(scheduler)) {
+            logger.logWarning(`${this.className}.subscribe`, "Already subscribed");
+            return false;
+        }
+
+        this.schedulers.add(scheduler);
+        scheduler.addListener(Scheduler.FIRE, this.execute);
+        return true;
+    }
+
+    unsubscribe(scheduler: Scheduler): boolean {
+        if (!this.schedulers.has(scheduler)) {
+            logger.logWarning(`${this.className}.unsubscribe`, "Currently unsubscribed");
+            return false;
+        }
+
+        scheduler.addListener(Scheduler.FIRE, this.execute);
+        this.schedulers.delete(scheduler);
+        return true;
     }
 }

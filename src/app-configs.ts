@@ -1,3 +1,4 @@
+import { SchedulerConfigs } from "@ldb/scheduler";
 import { NodeOptions } from "@sc-logger/sentry";
 import { SkynexConfigs } from "@sc-logger/skynex";
 import { SERVICE_VERSION } from "./service-version";
@@ -10,6 +11,10 @@ const db = {
 const appName = encodeURI("Randomness Exporter DevMode");
 
 const environment = "LOCAL-DEV";
+
+export const eventConfigs: SchedulerConfigs = {
+    metricCalculation: 60_000,
+};
 
 export const sentryOptions: NodeOptions = {
     dsn: "https://098a0c6ad1d74e8eb39ec7df895e59e0@sentry.lumigame.com/76",

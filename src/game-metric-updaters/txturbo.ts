@@ -126,7 +126,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class TxturboMetricUpdater extends MetricUpdater {
-    constructor(protected metricCollection: Collection, protected roundCollection: Collection) {
-        super(metricCollection, roundCollection, pipelineFactory);
+    constructor(protected txturboMetricCollection: Collection, protected txturboRoundCollection: Collection) {
+        super(txturboMetricCollection, txturboRoundCollection, pipelineFactory);
     }
 }
