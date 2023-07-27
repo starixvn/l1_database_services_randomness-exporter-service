@@ -4,6 +4,8 @@
     "description": "",
     "main": "lib/app.js",
     "scripts": {
+        "yarn": "rimraf node_modules && yarn install",
+        "pnpm": "rimraf node_modules && pnpm install",
         "test:single": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest",
         "test": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest --testPathPattern=tests/unit-tests/",
         "test-coverage": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest --collect-coverage --testPathPattern=tests/unit-tests/",
