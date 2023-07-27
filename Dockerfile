@@ -1,11 +1,11 @@
-FROM hub.lumigame.com/docker-hub/library/node:18.14-alpine AS builder
+FROM hub.lumigame.com/docker-hub/library/node:lts-alpine AS builder
 WORKDIR /app
 COPY . .
 RUN yarn reg \
  && yarn install
 RUN yarn build
 
-FROM hub.lumigame.com/docker-hub/library/node:18.14-alpine
+FROM hub.lumigame.com/docker-hub/library/node:lts-alpine
 ARG NODE_ENV=production
 ENV NODE_ENV $NODE_ENV
 RUN mkdir /app && chown node:node /app
