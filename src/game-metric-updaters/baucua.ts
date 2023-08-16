@@ -120,7 +120,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class BaucuaMetricUpdater extends MetricUpdater {
-    constructor(protected baucuaMetricCollection: Collection, protected baucuaRoundCollection: Collection) {
+    constructor(baucuaMetricCollection: Collection, baucuaRoundCollection: Collection) {
         super(baucuaMetricCollection, baucuaRoundCollection, pipelineFactory);
     }
 }

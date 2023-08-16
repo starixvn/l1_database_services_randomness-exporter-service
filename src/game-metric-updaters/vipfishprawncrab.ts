@@ -137,7 +137,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class VipfishprawncrabMetricUpdater extends MetricUpdater {
-    constructor(protected vipfishprawncrabMetricCollection: Collection, protected vipfishprawncrabRoundCollection: Collection) {
+    constructor(vipfishprawncrabMetricCollection: Collection, vipfishprawncrabRoundCollection: Collection) {
         super(vipfishprawncrabMetricCollection, vipfishprawncrabRoundCollection, pipelineFactory);
     }
 }

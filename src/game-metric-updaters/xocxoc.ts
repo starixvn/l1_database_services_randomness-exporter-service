@@ -120,7 +120,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class XocxocMetricUpdater extends MetricUpdater {
-    constructor(protected xocxocMetricCollection: Collection, protected xocxocRoundCollection: Collection) {
+    constructor(xocxocMetricCollection: Collection, xocxocRoundCollection: Collection) {
         super(xocxocMetricCollection, xocxocRoundCollection, pipelineFactory);
     }
 }

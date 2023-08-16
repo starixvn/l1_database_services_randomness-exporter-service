@@ -126,7 +126,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 }
 
 export class TaixiuMetricUpdater extends MetricUpdater {
-    constructor(protected taixiuMetricCollection: Collection, protected taixiuRoundCollection: Collection) {
+    constructor(taixiuMetricCollection: Collection, taixiuRoundCollection: Collection) {
         super(taixiuMetricCollection, taixiuRoundCollection, pipelineFactory);
     }
 }

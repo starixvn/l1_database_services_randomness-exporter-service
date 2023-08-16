@@ -6,9 +6,9 @@ export class MetricUpdater {
     private readonly schedulers: Set<Scheduler> = new Set();
 
     constructor(
-        protected metricCollection: Collection,
-        protected roundCollection: Collection,
-        private pipelineFactory: (...args: [string, string]) => Document[]
+        protected readonly metricCollection: Collection,
+        protected readonly roundCollection: Collection,
+        private readonly pipelineFactory: (...args: [string, string]) => Document[]
     ) {
         this.metricCollection = metricCollection;
         this.roundCollection = roundCollection;
@@ -28,12 +28,6 @@ export class MetricUpdater {
     protected get className(): string {
         return this.constructor.name;
     }
-
-    setPipelineFactory(pipelineFactory: (...args: [string, string]) => Document[]): this {
-        this.pipelineFactory = pipelineFactory;
-        return this;
-    }
-
     async execute(): Promise<void> {
         const aggregateOptions: AggregateOptions = {
             retryWrites: true,
