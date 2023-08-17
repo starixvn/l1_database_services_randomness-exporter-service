@@ -48,7 +48,7 @@ export class MetricUpdater {
 
             if (type === "counter") {
                 const prom: Counter = (register.getSingleMetric(metric) as Counter) ?? new Counter({ name: metric, help: metric, labelNames: METRIC_LABELS });
-                prom.reset();
+                prom.remove(labels);
                 prom.inc(labels, value);
             } else if (type === "gauge") {
                 const prom: Gauge = (register.getSingleMetric(metric) as Gauge) ?? new Gauge({ name: metric, help: metric, labelNames: METRIC_LABELS });
