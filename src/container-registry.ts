@@ -1,15 +1,12 @@
 import { Scheduler, SchedulerConfigs } from "@ldb/scheduler";
 import { AwilixContainer, InjectionMode, ResolveOptions, asClass, asValue, createContainer } from "awilix";
+import { Agent } from "http";
 import { ChangeStreamNameSpace, MongoClient } from "mongodb";
-import {
-    BaucuaMetricUpdater,
-    TaixiuMetricUpdater,
-    TxturboMetricUpdater,
-    VipfishprawncrabMetricUpdater,
-    VipsedieMetricUpdater,
-    XocxocMetricUpdater,
-} from "./game-metric-updaters";
+import { register } from "prom-client";
+import { BaucuaMetricUpdater, TaixiuMetricUpdater, TxturboMetricUpdater, VipfishprawncrabMetricUpdater, VipsedieMetricUpdater, XocxocMetricUpdater } from "./game-metric-updaters";
+import { GatewayAPI, GatewayOptions, MetricGateway } from "./modules/metric-gateway";
 import { Monitor } from "./monitor";
+import { PushGatewayConfigs } from "./types/push-gateway-configs";
 
 export class ContainerRegistry {
     private readonly container: AwilixContainer;
@@ -76,10 +73,30 @@ export class ContainerRegistry {
     }
 
     private registerEnv(): this {
-        const { NODE_ENV: nodeEnv } = process.env;
+        const { NODE_ENV: nodeEnv = "DEVELOPMENT" } = process.env;
 
         this.container.register({
-            nodeEnv: asValue(nodeEnv || "DEVELOPMENT"),
+            nodeEnv: asValue(nodeEnv),
+        });
+
+        return this;
+    }
+
+    registerPushGateway(pushGatewayConfigs: PushGatewayConfigs) {
+        const {
+            baseURL,
+            options: { timeout, agentOptions },
+            parameters,
+        } = pushGatewayConfigs;
+        const agent = new Agent(agentOptions);
+
+        this.container.register({
+            metricGateway: asClass(MetricGateway).singleton(),
+            gatewayAPI: asClass(GatewayAPI).singleton(),
+            gatewayURL: asValue(baseURL),
+            gatewayOptions: asValue<GatewayOptions>({ timeout, agent }),
+            registry: asValue(register),
+            gatewayParameters: asValue(parameters),
         });
 
         return this;

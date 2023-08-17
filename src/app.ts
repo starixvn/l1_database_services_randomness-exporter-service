@@ -1,5 +1,5 @@
 import { MongoClient } from "mongodb";
-import { database, eventConfigs, hostingPort } from "./app-configs";
+import { database, eventConfigs, hostingPort, promPushGatewayConfigs } from "./app-configs";
 import { ContainerRegistry } from "./container-registry";
 import { HealthCheckServer } from "./healthcheck-server";
 import { logger } from "./loggers";
@@ -14,7 +14,11 @@ import { SERVICE_VERSION } from "./service-version";
     }
 
     const mongoClient = new MongoClient(database.url);
-    const container = new ContainerRegistry().register(mongoClient).registerScheduler(eventConfigs).registerNamespaces(namespaces);
+    const container = new ContainerRegistry()
+        .register(mongoClient)
+        .registerScheduler(eventConfigs)
+        .registerNamespaces(namespaces)
+        .registerPushGateway(promPushGatewayConfigs);
 
     const monitor: Monitor = container.resolve("monitor");
     monitor.run();

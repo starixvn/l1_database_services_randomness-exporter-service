@@ -2,6 +2,7 @@ import { Scheduler } from "@ldb/scheduler";
 import { waitMs } from "@ldb/utils";
 import { logger, terminal } from "./loggers";
 import { MetricUpdater } from "./modules";
+import { MetricGateway } from "./modules/metric-gateway";
 
 export class Monitor {
     constructor(
@@ -12,12 +13,9 @@ export class Monitor {
         private readonly taixiuMetricUpdater: MetricUpdater,
         private readonly txturboMetricUpdater: MetricUpdater,
         private readonly baucuaMetricUpdater: MetricUpdater,
-        private readonly vipfishprawncrabMetricUpdater: MetricUpdater
+        private readonly vipfishprawncrabMetricUpdater: MetricUpdater,
+        private readonly metricGateway: MetricGateway
     ) {
-        this.nodeEnv = nodeEnv;
-        this.scheduler = scheduler;
-        this.taixiuMetricUpdater = taixiuMetricUpdater;
-
         this.reportUnhandleErrors();
     }
 
@@ -46,8 +44,13 @@ export class Monitor {
         this.baucuaMetricUpdater.subscribe(this.scheduler);
         this.vipfishprawncrabMetricUpdater.subscribe(this.scheduler);
 
+        this.metricGateway.subscribe(this.scheduler);
+
         if (this.nodeEnv === "DEVELOPMENT") {
-            this.scheduler.emit(Scheduler.FIRE, "");
+            logger.logDebug("Dev Mode");
+            this.scheduler.on("CALCULATE", () => logger.logDebug("CALCULATE fired!"));
+            this.scheduler.on("PUSH", () => logger.logDebug("PUSH fired!"));
+            this.scheduler.emit("CALCULATE");
         }
         terminal.logInfo("The monitor has run!");
     }

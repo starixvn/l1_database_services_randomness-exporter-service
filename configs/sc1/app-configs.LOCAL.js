@@ -5,21 +5,36 @@ const db = {
     server: "10.10.50.12:39100,10.10.50.13:39100,10.10.50.14:39100",
     replSet: "L1Local",
 };
-const appName = encodeURI("Randomness Exporter Service");
+const appName = encodeURI("Randomness Exporter DevMode");
 
-const environment = "LOCAL0";
+const environment = "LOCAL-0";
+const service = "randomness-exporter";
 
 export const eventConfigs = {
-    metricCalculation: 60_000,
+    CALCULATE: 60_000,
+    PUSH: [60_000, 30_000],
+};
+
+export const promPushGatewayConfigs = {
+    baseURL: `http://10.10.50.14:9091`,
+    options: {
+        timeout: 5_000,
+        agentOptions: {
+            keepAlive: true,
+            keepAliveMsecs: 10_000,
+            maxSockets: 10,
+        },
+    },
+    parameters: { jobName: service, groupings: { instance: `SC-${environment}` } },
 };
 
 export const sentryOptions = {
     dsn: "https://098a0c6ad1d74e8eb39ec7df895e59e0@sentry.lumigame.com/76",
     environment,
     initialScope: {
-        tags: { service: "randomness-exporter" },
+        tags: { service },
     },
-    release: `randomness-exporter-service@${SERVICE_VERSION}`,
+    release: `${service}-service@${SERVICE_VERSION}`,
 };
 
 export const skynexOptions = {

@@ -138,6 +138,6 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 
 export class VipfishprawncrabMetricUpdater extends MetricUpdater {
     constructor(vipfishprawncrabMetricCollection: Collection, vipfishprawncrabRoundCollection: Collection) {
-        super(vipfishprawncrabMetricCollection, vipfishprawncrabRoundCollection, pipelineFactory);
+        super(vipfishprawncrabMetricCollection, vipfishprawncrabRoundCollection, pipelineFactory, { game_id: 26, game_name: "vipfishprawncrab" });
     }
 }

@@ -4,9 +4,10 @@
     "description": "",
     "main": "lib/app.js",
     "scripts": {
-        "yarn": "rimraf node_modules && yarn install",
-        "pnpm": "rimraf node_modules && pnpm install",
-        "test:single": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest",
+        "modules:backup": "rimraf node_modules_tmp && mv node_modules node_modules_tmp",
+        "modules:restore": "rimraf node_modules && mv node_modules_tmp node_modules",
+        "yarn": "pnpm modules:backup && yarn install && pnpm modules:restore",
+        "test:unit": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest",
         "test": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest --testPathPattern=tests/unit-tests/",
         "test-coverage": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest --collect-coverage --testPathPattern=tests/unit-tests/",
         "integration-test": "NODE_OPTIONS=\"--experimental-vm-modules --es-module-specifier-resolution=node --no-warnings\" jest --config ./jest.integration-test.config.ts --testPathPattern=tests/integration-tests/",
@@ -34,7 +35,8 @@
         "@sc-logger/terminal": "^1.0.4",
         "awilix": "^8.0.1",
         "bson": "^5.4.0",
-        "mongodb": "^5.7.0"
+        "mongodb": "^5.7.0",
+        "prom-client": "^14.2.0"
     },
     "devDependencies": {
         "@commitlint/cli": "^17.7.1",

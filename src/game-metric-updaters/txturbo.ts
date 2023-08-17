@@ -11,10 +11,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
             $lookup: {
                 from: roundCollectionName,
                 let: { lastRound: "$lastRound" },
-                pipeline: [
-                    { $match: { $expr: { $gt: ["$id", "$$lastRound"] } } },
-                    { $project: { _id: 0, id: 1, result: 1, settlementResult: 1 } },
-                ],
+                pipeline: [{ $match: { $expr: { $gt: ["$id", "$$lastRound"] } } }, { $project: { _id: 0, id: 1, result: 1, settlementResult: 1 } }],
                 as: "data",
             },
         },
@@ -127,6 +124,6 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 
 export class TxturboMetricUpdater extends MetricUpdater {
     constructor(txturboMetricCollection: Collection, txturboRoundCollection: Collection) {
-        super(txturboMetricCollection, txturboRoundCollection, pipelineFactory);
+        super(txturboMetricCollection, txturboRoundCollection, pipelineFactory, { game_id: 4, game_name: "txturbo" });
     }
 }

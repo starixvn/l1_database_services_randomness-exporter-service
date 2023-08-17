@@ -11,10 +11,7 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
             $lookup: {
                 from: roundCollectionName,
                 let: { lastRound: "$lastRound" },
-                pipeline: [
-                    { $match: { $expr: { $gt: ["$id", "$$lastRound"] } } },
-                    { $project: { _id: 0, id: 1, result: 1, settlementResult: 1 } },
-                ],
+                pipeline: [{ $match: { $expr: { $gt: ["$id", "$$lastRound"] } } }, { $project: { _id: 0, id: 1, result: 1, settlementResult: 1 } }],
                 as: "data",
             },
         },
@@ -121,6 +118,6 @@ function pipelineFactory(metricCollectionName: string, roundCollectionName: stri
 
 export class XocxocMetricUpdater extends MetricUpdater {
     constructor(xocxocMetricCollection: Collection, xocxocRoundCollection: Collection) {
-        super(xocxocMetricCollection, xocxocRoundCollection, pipelineFactory);
+        super(xocxocMetricCollection, xocxocRoundCollection, pipelineFactory, { game_id: 2, game_name: "xocxoc" });
     }
 }

@@ -1,19 +1,19 @@
 import { Scheduler } from "@ldb/scheduler";
 import { AggregateOptions, Collection, Document } from "mongodb";
+import { Counter, Gauge, Metric, register } from "prom-client";
 import { logger } from "../loggers";
+import { GameInfo, METRIC_LABELS, MetricData, MetricLabels } from "../types/metric-data";
 
 export class MetricUpdater {
     private readonly schedulers: Set<Scheduler> = new Set();
+    private readonly metrics: Map<string, Metric<MetricLabels>> = new Map();
 
     constructor(
         protected readonly metricCollection: Collection,
         protected readonly roundCollection: Collection,
-        private readonly pipelineFactory: (...args: [string, string]) => Document[]
+        private readonly pipelineFactory: (...args: [string, string]) => Document[],
+        private readonly gameInfo: GameInfo
     ) {
-        this.metricCollection = metricCollection;
-        this.roundCollection = roundCollection;
-        this.pipelineFactory = pipelineFactory;
-
         this.selfBound();
     }
 
@@ -29,16 +29,33 @@ export class MetricUpdater {
         return this.constructor.name;
     }
     async execute(): Promise<void> {
-        const aggregateOptions: AggregateOptions = {
-            retryWrites: true,
-            allowDiskUse: true,
-            comment: "",
-        };
+        const aggregateOptions: AggregateOptions = { retryWrites: true, allowDiskUse: true, comment: "" };
 
         try {
             await this.metricCollection.aggregate(this.pipeline, aggregateOptions).tryNext();
+            await this.updateMetric();
         } catch (error: unknown) {
             this.handleAggregateError(error, "executeMergeAggregate");
+        }
+    }
+
+    private async updateMetric() {
+        const metricCursor = this.metricCollection.find<MetricData>({}, { projection: { _id: 0 } });
+        for await (const metricData of metricCursor) {
+            const { metric, metadata, type, value } = metricData;
+
+            const labels = { ...this.gameInfo, ...metadata };
+
+            if (type === "counter") {
+                const prom: Counter = (register.getSingleMetric(metric) as Counter) ?? new Counter({ name: metric, help: metric, labelNames: METRIC_LABELS });
+                prom.reset();
+                prom.inc(labels, value);
+            } else if (type === "gauge") {
+                const prom: Gauge = (register.getSingleMetric(metric) as Gauge) ?? new Gauge({ name: metric, help: metric, labelNames: METRIC_LABELS });
+                prom.set(labels, value);
+            } else {
+                throw new TypeError(`Invalid metric type ${type}`);
+            }
         }
     }
 
@@ -53,7 +70,7 @@ export class MetricUpdater {
         }
 
         this.schedulers.add(scheduler);
-        scheduler.addListener(Scheduler.FIRE, this.execute);
+        scheduler.addListener("CALCULATE", this.execute);
         return true;
     }
 
@@ -63,7 +80,7 @@ export class MetricUpdater {
             return false;
         }
 
-        scheduler.addListener(Scheduler.FIRE, this.execute);
+        scheduler.removeListener("CALCULATE", this.execute);
         this.schedulers.delete(scheduler);
         return true;
     }
