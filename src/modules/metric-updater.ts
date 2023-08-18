@@ -2,7 +2,7 @@ import { Scheduler } from "@ldb/scheduler";
 import { AggregateOptions, Collection, Document } from "mongodb";
 import { Counter, Gauge, Metric, register } from "prom-client";
 import { logger } from "../loggers";
-import { GameInfo, METRIC_LABELS, MetricData, MetricLabels } from "../types/metric-data";
+import { GameInfo, METRIC_LABELS, MetricData, MetricLabels, MetricType } from "../types/metric-data";
 
 export class MetricUpdater {
     private readonly schedulers: Set<Scheduler> = new Set();
@@ -39,6 +39,35 @@ export class MetricUpdater {
         }
     }
 
+    private createMetric(metricName: string, metricType: MetricType) {
+        switch (metricType) {
+            case "counter":
+                return new Counter({ name: metricName, help: metricName, labelNames: METRIC_LABELS });
+            case "gauge":
+                return new Gauge({ name: metricName, help: metricName, labelNames: METRIC_LABELS });
+            default:
+                throw new TypeError(`Unsupported metric ${metricType}`);
+        }
+    }
+
+    private async getMetric(metricName: string, metricType: MetricType) {
+        const registeredMetric = register.getSingleMetric(metricName);
+
+        if (!registeredMetric) {
+            return this.createMetric(metricName, metricType);
+        }
+
+        if (metricType === "counter" && registeredMetric instanceof Counter) {
+            return registeredMetric;
+        }
+
+        if (metricType === "gauge" && registeredMetric instanceof Gauge) {
+            return registeredMetric;
+        }
+
+        throw new TypeError(`Incorrect metric type: expect "${metricType}", received "${(await registeredMetric.get()).type}"`);
+    }
+
     private async updateMetric() {
         const metricCursor = this.metricCollection.find<MetricData>({}, { projection: { _id: 0 } });
         for await (const metricData of metricCursor) {
@@ -46,13 +75,12 @@ export class MetricUpdater {
 
             const labels = { ...this.gameInfo, ...metadata };
 
-            if (type === "counter") {
-                const prom: Counter = (register.getSingleMetric(metric) as Counter) ?? new Counter({ name: metric, help: metric, labelNames: METRIC_LABELS });
-                prom.remove(labels);
-                prom.inc(labels, value);
-            } else if (type === "gauge") {
-                const prom: Gauge = (register.getSingleMetric(metric) as Gauge) ?? new Gauge({ name: metric, help: metric, labelNames: METRIC_LABELS });
-                prom.set(labels, value);
+            const metricObject = await this.getMetric(metric, type);
+            if (metricObject instanceof Counter) {
+                metricObject.remove(labels);
+                metricObject.inc(labels, value);
+            } else if (metricObject instanceof Gauge) {
+                metricObject.set(labels, value);
             } else {
                 throw new TypeError(`Invalid metric type ${type}`);
             }
