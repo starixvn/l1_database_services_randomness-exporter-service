@@ -7,7 +7,7 @@ const db = {
 };
 const appName = encodeURI("Randomness Exporter DevMode");
 
-const environment = "LOCAL-0";
+const environment = "LOCAL-1";
 const service = "randomness-exporter";
 
 export const eventConfigs = {
